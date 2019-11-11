@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>My Search Engine</title>
+    <!-- <link rel="stylesheet" href="./css/fa/all.css"> -->
+    <!-- <link rel="stylesheet" type="text/css" href="./css/bootstrap/bootstrap.min.css"> -->
+    <!-- <link rel="stylesheet" type="text/css" href="form.css"> -->
+    <link rel="stylesheet" type="text/css" href="form2.css">
+    <link rel="stylesheet" href="./js/jquery-3.4.1.min.js">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.min.js"></script>
+
+    <script src="./js/all.js"></script>
+
+  </head>
+
+  <!-- <link rel="stylesheet" href="./bootstrap/bootstrap.min.js"> -->
+
+  <style>
+    *{
+      font-family: helvetica;
+    }
+    h1{
+      text-align: center;
+      color: white;
+      padding-top: 20px;
+      margin: 0px;
+      font: 35px helvetica;
+      color: black;
+    }
+    #main{
+      margin: 0px;
+      /* height: 600px;
+      width: 800px; */
+      height: 555px;
+      width: 780px;
+      background-image: url('images.jpg');
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+    #search_result{
+      display: none;
+      border-radius: 10px;
+      background-color: white;
+      padding: 10px;
+      margin-top: 15%;
+      text-align: center;
+    }
+    /* #text{
+      color: blue;
+      text-decoration-line: underline;
+    } */
+    ::placeholder{
+      color: #cccccc;
+    }
+  </style>
+  <body>
+    <div id="main">
+      <h1>DoReMi Search Engine</h1>
+      <h3 id="timer"></h3>
+      <!-- <p id="text"></p> -->
+
+      <div class="searchBox">
+
+          <input id="searchInput" class="searchInput"type="text" name="" placeholder="Search..." onkeypress="checkEnter(event)">
+          <button class="searchButton" onclick="search()">
+              <i class="fas fa-search">
+                  search
+              </i>
+          </button>
+      </div>
+      <h3 id="timer"></h3>
+      <div >
+          
+      </div>
+      
+      <div id="search_result">
+        <span id="res_ct"></span>(
+        <span id="s_seconds">00</span>:
+        <span id="s_ms">000</span> seconds)
+        <!-- <p id="result"></p> -->
+        <p id="text"></p>
+      </div>
+    </div>
+    
+    <!-- You can also require other files to run in this process -->
+    <script src="./renderer.js"></script>
+    <!-- <script src="./form.js"></script> -->
+    <script>
+      var app = document.getElementById('app'),
+      init = document.getElementById('init'), 
+      layer = document.getElementById('layer'), 
+      input = document.getElementById('inp'), 
+      button = document.getElementById('btnSearch');
+      function toggleApp()
+      {
+          app.classList.toggle('opened');
+          if( button.className == ('shadow') )
+              button.classList.toggle('shadow');
+          else
+              setTimeout(function(){ button.classList.toggle('shadow'); },300);
+
+          if( app.className == ('opened') )
+          {
+              setTimeout(function(){ input.classList.toggle('move-up'); },200);
+              setTimeout(function(){ input.focus(); },500);
+          }
+          else
+              setTimeout(function(){ input.classList.toggle('move-up').val(''); },200);
+
+          if( ! layer.className == ('sl') )
+          {
+              setTimeout(function()
+              {  
+                  layer.addClass('sl');
+              },800);
+          }
+          else
+              setTimeout(function(){ layer.classList.remove('sl'); },300);
+
+          this.search();
+      }
+      
+    </script>
+    <script>
+      let offset = 0,
+      paused = true;
+      const fs = require('fs');
+      const HashMap = require('hashmap');
+      const ArrayList = require('arraylist');
+      const StopWords = require('stopword');
+      // const Lemmatizer = require('lemmatizer');
+      const lem = require("javascript-lemmatizer");
+      const lemmatizer = new lem();
+      const stemmer = require('stemmer');
+      var map = new HashMap();
+      var allRes=new Array(),cleanedQuery;
+
+      function checkEnter(e){
+        let keycode = (e.keyCode ? e.keyCode : e.which);
+        if (keycode == '13') {
+          this.search();
+        }
+      }
+
+      function search(){   
+        this.resetStopwatch();     
+        this.startStopwatch();
+        var query = document.getElementsByClassName("searchInput")[0].value;
+        if(query.toString()===""){}
+        else{
+          cleanedQuery = this.dataPreprocessing(query);
+          console.log(cleanedQuery);
+          window.localStorage.setItem("query",cleanedQuery);
+          let text = document.getElementById("text");
+          document.getElementById("search_result").style.display = "block";
+          let res,docRes=new Array();
+          let resCt=0;
+          allRes = new Array();
+          // let allRes = new Array();
+          text.innerHTML = "Search Result For : " + query + "<br/><br/>";
+          for (let i = 0; i < cleanedQuery.length; i++) {
+            if(map.get(cleanedQuery[i]) != undefined){
+              // docRes.push(map.get(cleanedQuery[i]).split(","));  
+              let temp = map.get(cleanedQuery[i]).split(",");
+              for (let j = 0; j < temp.length; j++) {
+                if(allRes.includes(temp[j])==false){
+                  allRes.push(temp[j]);
+                }
+              }           
+              console.log(docRes);
+            }
+          }
+          for (let index = 0; index < allRes.length; index++) {
+                // console.log(docRes[index]);
+                // if(allRes.includes(docRes[index])==false){
+                //   console.log("masuk");
+                  // allRes.push(docRes[index]);
+                  text.innerHTML += "<a onclick='writeDocs(this)' href='docs.html'>"+allRes[index] + "</a><p class='list'></p>";
+                  resCt++;
+                // }
+          }
+          console.log(allRes);
+          if(allRes.length==0){
+            text.innerHTML = "Your Search : <b>"+query+"</b> - did not match any documents :( <br/>Suggestions:"+
+              "<br/><ul><li>Make sure that all words are spelled correctly.</li><li>Try different keywords.</li><li>Try more general keywords.</li></ul>";
+          }
+          document.getElementById("res_ct").innerHTML = "About "+ resCt + " results ";
+        }
+        this.stopStopwatch();
+        this.showResult();
+      }
+
+      function showResult(){
+        
+        for (let i = 0; i < allRes.length; i++) {
+          let data = fs.readFileSync('./DataSet/'+allRes[i]);
+          data = data.toString().toLowerCase().replace(/[^A-Za-z0-9_]/g," ");
+          data = data.toString().split(" ");
+          let bool = false;
+          let str,pos;
+          for (let index = 0; index < data.length; index++) {
+            let term = lemmatizer.only_lemmas(data[index]);
+            term = stemmer(term);
+            for (let j = 0; j < cleanedQuery.length; j++) {
+                if(term==cleanedQuery[j]){
+                  // str += "<b>"+arrData[index]+"</b> ";
+                  pos = index;
+                  bool = true;
+                  break;
+                }
+                // else{
+                //   bool = false;
+                // }
+            }
+            if(bool==true){break;}
+          }
+            if(bool==true){
+              let start,end,temp;
+              if(pos < 10){
+                start = 0;
+                end = 5;
+              }
+              else if((data.length-1) - pos < 10){
+                start = data.length-11;
+                end = data.length;
+                temp = "...";
+              }
+              else{
+                start = pos - 4;
+                end = pos + 9;
+                temp = "...";
+              }
+              console.log(start,end);
+              // console.log(data[start]);
+              for (let idx = start; idx < end; idx++) {
+                // let list = document.getElementsByClassName("list")[idx];
+                if(idx == pos){
+                  // document.getElementsByClassName("list")[i].innerHTML += "<b>"+data[idx]+"</b> ";
+                  temp += "<b>"+data[idx]+"</b> ";
+                }
+                else{
+                  // document.getElementsByClassName("list")[i].innerHTML += data[idx]+" ";
+                  temp += data[idx]+" ";
+                }
+              }
+              document.getElementsByClassName("list")[i].innerHTML += temp;
+              if((data.length-1) - pos < 5 == false){
+                document.getElementsByClassName("list")[i].innerHTML += "...";
+              }
+          }
+          
+        }
+      }
+
+      function writeDocs(param){
+        window.localStorage.setItem("curDoc", param.innerHTML);
+        window.location = "./docs.html";
+        // fs.writeFile("currentDocs.txt", param.innerHTML.toString(), (err) => {
+        // if (err) console.log(err);
+        //   console.log("Successfully Write Boolean.");
+        // });
+      }
+  
+      function startStopwatch(evt) {
+        if (paused) {
+          paused = false;
+          offset -= Date.now();
+          render();
+        }
+      }
+
+      function stopStopwatch(evt) {
+        if (!paused) {
+          paused = true;
+          offset += Date.now();
+        }
+      }
+
+      function resetStopwatch(evt) {
+        if (paused) {
+          offset = 0;
+          render();
+        } else {
+          offset = -Date.now();
+        }
+      }
+
+      function format(value, scale, modulo, padding) {
+        value = Math.floor(value / scale) % modulo;
+        return value.toString().padStart(padding, 0);
+      }
+
+      function render() {
+        var value = paused ? offset : Date.now() + offset;
+
+        document.querySelector('#s_ms').textContent = format(value, 1, 1000, 3);
+        document.querySelector('#s_seconds').textContent = format(value, 1000, 60, 2);
+        
+        if(!paused) {
+          requestAnimationFrame(render);
+        }
+      }
+      // this.start();
+
+      var isInvertedIndexCreated = fs.readFileSync('./isInvertedIndexCreated.txt');
+      console.log(isInvertedIndexCreated.toString());
+      if(isInvertedIndexCreated.toString()==='false'){
+        this.createInvertedIndex();
+        console.log("1");
+      }
+
+      this.readDictionary();
+      function readDictionary(){
+        var dictionary = fs.readFileSync('./Dictionary.txt').toString();
+        dictionary = dictionary.split('\n');
+        for (let i = 0; i < dictionary.length; i++) {
+          const element = dictionary[i].split(':');
+          map.set(element[0],element[1]);
+        }
+      }
+      
+      function dataPreprocessing(query){
+        let term = query.toString().toLowerCase().replace(/[^A-Za-z0-9_]/g," ").split(" ");
+        for (let i = 0; i < term.length; i++) {
+          let temp = lemmatizer.only_lemmas(term[i]);
+          term[i] = stemmer(temp);
+        }
+        console.log(term);
+        return term;
+      }
+
+      function createInvertedIndex(){
+        const map = new HashMap();
+        const list = new ArrayList();
+
+        var files = fs.readdirSync('./DataSet/');
+        for (let i = 0; i < files.length; i++) {
+          const element = files[i];
+          let data = fs.readFileSync('./DataSet/'+element);
+          // remove all symbol / puctuation
+          let res = data.toString();
+          res = res.toLowerCase();
+          res = res.replace(/[^A-Za-z0-9_]/g," ");
+          res = res.split(" ");
+          let words = StopWords.removeStopwords(res);
+          
+          let cleanedText = "";
+          for (let j = 0; j < words.length; j++) {
+
+            if(words[j].toString().length > 0 && words[j].toString() != ""){          
+             let temp = lemmatizer.only_lemmas(words[j]);
+             words[j] = temp[0];
+             words[j] = stemmer(words[j]);
+             words[j] = stemmer(words[j]);
+             cleanedText += words[j]+" ";
+              if(map.has(words[j])){
+                let list = map.get(words[j]);
+                if(list.contains(element.toString())== false){
+                  list.add([element.toString()]);
+                  map.set(words[j],list);
+                }
+                
+              }
+              else{
+                let list = new ArrayList();
+                list.add([element.toString()]);
+                map.set(words[j],list);
+              }
+            }
+          }
+          
+          fs.writeFile("./CleanedDocs/"+element, cleanedText, (err) => {
+          if (err) console.log(err);
+            // console.log("Successfully Write InvertedIndex.");
+          })
+        }
+        var mapAsc = new HashMap([...map.entries()].sort());
+        var text;
+        mapAsc.forEach(function(value, key) {
+          text += key+":"+value+"\n";
+        });
+
+        fs.writeFile("Dictionary.txt", text, (err) => {
+        if (err) console.log(err);
+          console.log("Successfully Write InvertedIndex.");
+        })
+        fs.writeFile("isInvertedIndexCreated.txt", 'true', (err) => {
+        if (err) console.log(err);
+          console.log("Successfully Write Boolean.");
+        })
+      }
+      
+      if(window.localStorage.getItem("history")!=null){
+        let temp = "";
+        let array = window.localStorage.getItem("history").split(",");
+        for (let i = 0; i < array.length; i++) {
+          if(i!=0){
+            temp += " ";
+          }
+          temp += array[i];
+        }
+        document.getElementsByClassName("searchInput")[0].value = temp;
+        window.localStorage.removeItem("history");
+        this.search();
+        // window.localStorage.clear();
+      }
+      
+    </script>
+  </body>
+</html>

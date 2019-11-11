@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<style>
+    *{
+        font-family: helvetica;
+    }
+    button{
+        border-radius: 5px;
+        font-size: 15px;
+    }
+</style>
+<body>
+    <button onclick="goBack()">&lt; Go Back</button>
+    <h1 id="file_name"></h1>
+    <p id="text"></p>
+    <p id="text2"></p>
+</body>
+<script>
+    const fs = require('fs');
+
+    var doc = window.localStorage.getItem("curDoc");
+
+    var data = fs.readFileSync('./DataSet/'+doc);
+    data = data.toString().toLowerCase().replace(/[^A-Za-z0-9_]/g," ");
+    document.getElementById("text").innerHTML = data.toString();
+    document.getElementById("file_name").innerHTML = doc;
+
+    //2
+    const lem = require("javascript-lemmatizer");
+    const lemmatizer = new lem();
+    var arrData = data.toString().split(" ");
+    const query = window.localStorage.getItem("query").split(",");
+    window.localStorage.setItem("history", query);
+    const stemmer = require('stemmer');
+    let bool = false;
+    let str;
+    for (let index = 0; index < arrData.length; index++) {
+            let term = lemmatizer.only_lemmas(arrData[index]);
+            term = stemmer(term);
+            for (let i = 0; i < query.length; i++) {
+                if(term==query[i]){
+                    // document.getElementById("text2").innerHTML += "<b>"+arrData[index]+"</b> ";
+                    str += "<b>"+arrData[index]+"</b> ";
+                    bool = true;
+                }else{
+                    bool = false;
+                }
+            }
+            if(bool==false){
+                // document.getElementById("text2").innerHTML += arrData[index] + " ";
+                str += arrData[index] + " ";
+            }
+            
+    }
+    document.getElementById("text2").innerHTML += str
+    
+    
+
+
+    function goBack() {
+        window.history.back()
+    }
+</script>
+</html>

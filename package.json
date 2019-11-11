@@ -1,0 +1,35 @@
+{
+  "name": "electron-quick-start",
+  "version": "1.0.0",
+  "description": "A minimal Electron application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/electron/electron-quick-start",
+  "keywords": [
+    "Electron",
+    "quick",
+    "start",
+    "tutorial",
+    "demo"
+  ],
+  "author": "GitHub",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "^7.0.0"
+  },
+  "dependencies": {
+    "arraylist": "^0.1.0",
+    "electron-builder": "^22.1.0",
+    "hashmap": "^2.4.0",
+    "inverted-index": "^1.7.0",
+    "javascript-lemmatizer": "0.0.2",
+    "lemmatizer": "0.0.1",
+    "remove-punctuation": "0.0.4",
+    "stemmer": "^1.0.4",
+    "stopword": "^0.3.4",
+    "string-punctuation-tokenizer": "^2.0.0-beta.2",
+    "v8-compile-cache": "^2.1.0"
+  }
+}
